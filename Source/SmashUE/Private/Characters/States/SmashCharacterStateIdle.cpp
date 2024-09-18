@@ -25,6 +25,8 @@ void USmashCharacterStateIdle::StateEnter(ESmashCharacterStateID PreviousStateID
 		);
 	
 	Character->PlayAnimMontage(IdleAnim);
+	
+	Character->InputMoveXFastEvent.AddDynamic(this, &USmashCharacterStateIdle::OnInputMoveXFast);
 }
 
 void USmashCharacterStateIdle::StateExit(ESmashCharacterStateID NextStateID)
@@ -39,6 +41,8 @@ void USmashCharacterStateIdle::StateExit(ESmashCharacterStateID NextStateID)
 		);
 
 	Character->StopAnimMontage(IdleAnim);
+
+	Character->InputMoveXFastEvent.RemoveDynamic(this, &USmashCharacterStateIdle::OnInputMoveXFast);
 }
 
 void USmashCharacterStateIdle::StateTick(float DeltaTime)
@@ -56,4 +60,9 @@ void USmashCharacterStateIdle::StateTick(float DeltaTime)
 	{
 		StateMachine->ChangeState(ESmashCharacterStateID::Walk);
 	}
+}
+
+void USmashCharacterStateIdle::OnInputMoveXFast(float InputMoveX)
+{
+	StateMachine->ChangeState(ESmashCharacterStateID::Run);
 }
