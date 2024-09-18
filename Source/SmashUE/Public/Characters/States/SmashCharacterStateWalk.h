@@ -6,6 +6,8 @@
 #include "Characters/SmashCharacterState.h"
 #include "SmashCharacterStateWalk.generated.h"
 
+class UCharacterMovementComponent;
+
 UCLASS(ClassGroup=(SmashCharacterState), meta=(BlueprintSpawnableComponent))
 class SMASHUE_API USmashCharacterStateWalk : public USmashCharacterState
 {
@@ -22,4 +24,10 @@ public:
 	
 	UPROPERTY(EditAnywhere)
 	UAnimMontage* WalkAnim;
+
+	UPROPERTY(EditAnywhere)
+	float MoveSpeedMax = 250.f;
+
+	UPROPERTY()
+	UCharacterMovementComponent* MovementComponent;
 };
