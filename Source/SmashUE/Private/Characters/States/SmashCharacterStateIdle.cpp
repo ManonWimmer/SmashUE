@@ -6,6 +6,7 @@
 #include "Characters/SmashCharacterSettings.h"
 #include "Characters/SmashCharacterStateID.h"
 #include "Characters/SmashCharacterStateMachine.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 
 ESmashCharacterStateID USmashCharacterStateIdle::GetStateID()
@@ -40,8 +41,6 @@ void USmashCharacterStateIdle::StateExit(ESmashCharacterStateID NextStateID)
 		TEXT("Exit StateIdle")
 		);
 
-	Character->StopAnimMontage(IdleAnim);
-
 	Character->InputMoveXFastEvent.RemoveDynamic(this, &USmashCharacterStateIdle::OnInputMoveXFast);
 }
 
@@ -49,13 +48,8 @@ void USmashCharacterStateIdle::StateTick(float DeltaTime)
 {
 	Super::StateTick(DeltaTime);
 
-	GEngine->AddOnScreenDebugMessage(
-		-1,
-		3.f,
-		FColor::Emerald,
-		TEXT("Tick StateIdle")
-		);
-
+	if (!Character->GetCharacterMovement()->IsMovingOnGround()) StateMachine->ChangeState(ESmashCharacterStateID::Fall);
+	
 	if (FMath::Abs(Character->GetInputMoveX()) > CharacterSettings->InputMoveXTreshold)
 	{
 		StateMachine->ChangeState(ESmashCharacterStateID::Walk);

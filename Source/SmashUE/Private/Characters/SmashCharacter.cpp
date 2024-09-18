@@ -6,6 +6,7 @@
 #include "Characters/SmashCharacterInputData.h"
 #include "Characters/SmashCharacterStateMachine.h"
 #include "EnhancedInputComponent.h"
+#include "Characters/SmashCharacterStateID.h"
 
 
 // Sets default values	
@@ -43,6 +44,7 @@ void ASmashCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 	if (EnhancedInputComponent == nullptr) return;
 
 	BindInputMoveXAxisAndActions(EnhancedInputComponent);
+	BindInputJumpAndActions(EnhancedInputComponent);
 }
 
 float ASmashCharacter::GetOrientX() const
@@ -143,5 +145,27 @@ void ASmashCharacter::OnInputMoveXFast(const FInputActionValue& InputActionValue
 {
 	InputMoveX = InputActionValue.Get<float>();
 	InputMoveXFastEvent.Broadcast(InputMoveX);
+}
+
+void ASmashCharacter::BindInputJumpAndActions(UEnhancedInputComponent* EnhancedInputComponent)
+{
+	if (InputData == nullptr) return;
+	
+	if (InputData->InputActionJump)
+	{
+		EnhancedInputComponent->BindAction(
+			InputData->InputActionJump,
+			ETriggerEvent::Started,
+			this,
+			&ASmashCharacter::OnInputJump);
+	}
+}
+
+void ASmashCharacter::OnInputJump()
+{
+	if (StateMachine->CurrentStateID == ESmashCharacterStateID::Jump || StateMachine->CurrentStateID == ESmashCharacterStateID::Fall) return;
+	
+	StateMachine->ChangeState(ESmashCharacterStateID::Jump);
+	InputJumpEvent.Broadcast();
 }
 

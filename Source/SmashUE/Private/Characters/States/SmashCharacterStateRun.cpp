@@ -40,13 +40,13 @@ void USmashCharacterStateRun::StateExit(ESmashCharacterStateID NextStateID)
 		FColor::Red,
 		TEXT("Exit StateRun")
 		);
-	
-	Character->StopAnimMontage(RunAnim);
 }
 
 void USmashCharacterStateRun::StateTick(float DeltaTime)
 {
 	Super::StateTick(DeltaTime);
+
+	if (!Character->GetCharacterMovement()->IsMovingOnGround()) StateMachine->ChangeState(ESmashCharacterStateID::Fall);
 	
 	if (FMath::Abs(Character->GetInputMoveX()) < CharacterSettings->InputMoveXTreshold)
 	{

@@ -30,16 +30,16 @@ public:
 
 	USmashCharacterState* GetState(ESmashCharacterStateID StateID);
 	
+	UPROPERTY(BlueprintReadOnly)
+	ESmashCharacterStateID CurrentStateID;
+	
 protected:
 	UPROPERTY()
 	TObjectPtr<ASmashCharacter> Character;
 
 	UPROPERTY()
 	TArray<USmashCharacterState*> AllStates;
-
-	UPROPERTY(BlueprintReadOnly)
-	ESmashCharacterStateID CurrentStateID;
-
+	
 	UPROPERTY()
 	TObjectPtr<USmashCharacterState> CurrentState;
 
