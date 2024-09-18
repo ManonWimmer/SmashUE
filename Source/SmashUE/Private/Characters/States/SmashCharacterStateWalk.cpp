@@ -3,6 +3,7 @@
 
 #include "Characters/States/SmashCharacterStateWalk.h"
 #include "Characters/SmashCharacter.h"
+#include "Characters/SmashCharacterSettings.h"
 #include "Characters/SmashCharacterStateID.h"
 #include "Characters/SmashCharacterStateMachine.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -53,7 +54,7 @@ void USmashCharacterStateWalk::StateTick(float DeltaTime)
 
 	Character->GetCharacterMovement()->MaxWalkSpeed = WalkMoveSpeedMax;
 
-	if (FMath::Abs(Character->GetInputMoveX()) < 0.1f)
+	if (FMath::Abs(Character->GetInputMoveX()) < CharacterSettings->InputMoveXTreshold)
 	{
 		StateMachine->ChangeState(ESmashCharacterStateID::Idle);
 	}

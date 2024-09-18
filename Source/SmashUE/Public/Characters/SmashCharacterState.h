@@ -7,6 +7,7 @@
 #include "Components/ActorComponent.h"
 #include "SmashCharacterState.generated.h"
 
+class USmashCharacterSettings;
 class ASmashCharacter;
 class USmashCharacterStateMachine;
 
@@ -29,10 +30,16 @@ public:
 
 	virtual void StateTick(float DeltaTime);
 
+
+	
+
 protected:
 	UPROPERTY()
 	TObjectPtr<ASmashCharacter> Character;
 
 	UPROPERTY()
 	TObjectPtr<USmashCharacterStateMachine> StateMachine;
+
+	UPROPERTY()
+	const USmashCharacterSettings* CharacterSettings;
 };

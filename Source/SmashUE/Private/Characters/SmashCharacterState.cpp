@@ -2,7 +2,7 @@
 
 
 #include "Characters/SmashCharacterState.h"
-
+#include "Characters/SmashCharacterSettings.h"
 #include "Characters/SmashCharacterStateID.h"
 #include "Characters/SmashCharacterStateMachine.h"
 
@@ -29,6 +29,8 @@ void USmashCharacterState::StateInit(USmashCharacterStateMachine* InStateMachine
 		FColor::Magenta,
 		FString::Printf(TEXT("Init State %d"), GetStateID())
 		);
+
+	CharacterSettings = GetDefault<USmashCharacterSettings>();
 }
 
 void USmashCharacterState::StateEnter(ESmashCharacterStateID PreviousStateID)
