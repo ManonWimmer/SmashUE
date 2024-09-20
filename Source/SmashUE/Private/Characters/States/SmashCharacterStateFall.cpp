@@ -51,5 +51,8 @@ void USmashCharacterStateFall::StateTick(float DeltaTime)
 	{
 		StateMachine->ChangeState(ESmashCharacterStateID::Idle);
 	}
+
+	Character->SetOrientX(Character->GetInputMoveX());
+	Character->AddMovementInput(FVector::ForwardVector, Character->GetOrientX());
 }
 

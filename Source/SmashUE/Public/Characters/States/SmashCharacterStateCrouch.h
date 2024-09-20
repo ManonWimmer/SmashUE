@@ -4,20 +4,17 @@
 
 #include "CoreMinimal.h"
 #include "Characters/SmashCharacterState.h"
-#include "SmashCharacterStateWalk.generated.h"
+#include "SmashCharacterStateCrouch.generated.h"
 
-class UCharacterMovementComponent;
 
 UCLASS(ClassGroup=(SmashCharacterState), meta=(BlueprintSpawnableComponent))
-class SMASHUE_API USmashCharacterStateWalk : public USmashCharacterState
+class SMASHUE_API USmashCharacterStateCrouch : public USmashCharacterState
 {
 	GENERATED_BODY()
 
 public:
 	virtual ESmashCharacterStateID GetStateID() override;
 
-	UFUNCTION()
-	void OnInputJump(float InputJumpValue);
 	virtual void StateEnter(ESmashCharacterStateID PreviousStateID) override;
 
 	virtual void StateExit(ESmashCharacterStateID NextStateID) override;
@@ -25,11 +22,8 @@ public:
 	virtual void StateTick(float DeltaTime) override;
 	
 	UFUNCTION()
-	void OnInputMoveXFast(float InputMoveX);
+	void OnInputCrouch(float InputCrouchValue);
 	
 	UPROPERTY(EditAnywhere)
-	UAnimMontage* WalkAnim;
-
-	UPROPERTY(EditAnywhere)
-	float WalkMoveSpeedMax = 250.f;
+	UAnimMontage* CrouchAnim;
 };

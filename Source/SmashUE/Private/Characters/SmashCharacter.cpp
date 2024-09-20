@@ -20,7 +20,7 @@ ASmashCharacter::ASmashCharacter()
 void ASmashCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
 	CreateStateMachine();
 	InitStateMachine();
 }
@@ -45,6 +45,7 @@ void ASmashCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 
 	BindInputMoveXAxisAndActions(EnhancedInputComponent);
 	BindInputJumpAndActions(EnhancedInputComponent);
+	BindInputCrouchAndActions(EnhancedInputComponent);
 }
 
 float ASmashCharacter::GetOrientX() const
@@ -147,10 +148,15 @@ void ASmashCharacter::OnInputMoveXFast(const FInputActionValue& InputActionValue
 	InputMoveXFastEvent.Broadcast(InputMoveX);
 }
 
+void ASmashCharacter::OnInputJump(const FInputActionValue& InputActionValue)
+{
+	InputJumpEvent.Broadcast(InputActionValue.Get<float>());
+}
+
 void ASmashCharacter::BindInputJumpAndActions(UEnhancedInputComponent* EnhancedInputComponent)
 {
 	if (InputData == nullptr) return;
-	
+
 	if (InputData->InputActionJump)
 	{
 		EnhancedInputComponent->BindAction(
@@ -161,11 +167,40 @@ void ASmashCharacter::BindInputJumpAndActions(UEnhancedInputComponent* EnhancedI
 	}
 }
 
-void ASmashCharacter::OnInputJump()
+float ASmashCharacter::GetInputCrouchValue() const
 {
-	if (StateMachine->CurrentStateID == ESmashCharacterStateID::Jump || StateMachine->CurrentStateID == ESmashCharacterStateID::Fall) return;
-	
-	StateMachine->ChangeState(ESmashCharacterStateID::Jump);
-	InputJumpEvent.Broadcast();
+	return CrouchValue;
+}
+
+void ASmashCharacter::OnInputCrouch(const FInputActionValue& InputActionValue)
+{
+	CrouchValue = InputActionValue.Get<float>();
+	InputCrouchEvent.Broadcast(CrouchValue);
+}
+
+void ASmashCharacter::BindInputCrouchAndActions(UEnhancedInputComponent* EnhancedInputComponent)
+{
+	if (InputData == nullptr) return;
+
+	if (InputData->InputActionCrouch)
+	{
+		EnhancedInputComponent->BindAction(
+			InputData->InputActionCrouch,
+			ETriggerEvent::Started,
+			this,
+			&ASmashCharacter::OnInputCrouch);
+		
+		EnhancedInputComponent->BindAction(
+			InputData->InputActionCrouch,
+			ETriggerEvent::Triggered,
+			this,
+			&ASmashCharacter::OnInputCrouch);
+
+		EnhancedInputComponent->BindAction(
+			InputData->InputActionCrouch,
+			ETriggerEvent::Completed,
+			this,
+			&ASmashCharacter::OnInputCrouch);
+	}
 }
 

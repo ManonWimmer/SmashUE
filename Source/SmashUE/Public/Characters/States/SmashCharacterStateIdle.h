@@ -14,9 +14,15 @@ class SMASHUE_API USmashCharacterStateIdle : public USmashCharacterState
 
 public:
 	virtual ESmashCharacterStateID GetStateID() override;
+
+	UFUNCTION()
+	void OnInputCrouch(float InputCrouch);
 	
 	virtual void StateEnter(ESmashCharacterStateID PreviousStateID) override;
-
+	
+	UFUNCTION()
+	void OnInputJump(float InputJump);
+	
 	virtual void StateExit(ESmashCharacterStateID NextStateID) override;
 
 	virtual void StateTick(float DeltaTime) override;

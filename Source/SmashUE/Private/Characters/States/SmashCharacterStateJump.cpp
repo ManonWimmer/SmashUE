@@ -25,8 +25,7 @@ void USmashCharacterStateJump::StateEnter(ESmashCharacterStateID PreviousStateID
 		);
 
 	Character->PlayAnimMontage(JumpAnim);
-
-	Character->InputJumpEvent.AddDynamic(this, &USmashCharacterStateJump::OnInputJump);
+	OnInputJump();
 }
 
 void USmashCharacterStateJump::StateExit(ESmashCharacterStateID NextStateID)
@@ -39,8 +38,6 @@ void USmashCharacterStateJump::StateExit(ESmashCharacterStateID NextStateID)
 		FColor::Red,
 		TEXT("Exit StateJump")
 		);
-
-	Character->InputJumpEvent.RemoveDynamic(this, &USmashCharacterStateJump::OnInputJump);
 }
 
 void USmashCharacterStateJump::StateTick(float DeltaTime)
@@ -54,6 +51,9 @@ void USmashCharacterStateJump::StateTick(float DeltaTime)
 	{
 		StateMachine->ChangeState(ESmashCharacterStateID::Fall);
 	}
+
+	Character->SetOrientX(Character->GetInputMoveX());
+	Character->AddMovementInput(FVector::ForwardVector, Character->GetOrientX());
 }
 
 void USmashCharacterStateJump::OnInputJump()
