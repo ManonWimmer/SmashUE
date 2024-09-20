@@ -17,7 +17,14 @@ class SMASHUE_API ASmashCharacter : public ACharacter
 	GENERATED_BODY()
 
 #pragma region Unreal Default
+
 public:
+	UFUNCTION()
+	void OnCollisionEnter(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
+	                      int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+	UFUNCTION()
+	void OnCollisionExit(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 	// Sets default values for this character's properties
 	ASmashCharacter();
 
@@ -34,6 +41,7 @@ public:
 #pragma endregion
 
 #pragma region Orient
+
 public:
 	float GetOrientX() const;
 	void SetOrientX(float NewOrientX);
@@ -43,10 +51,11 @@ protected:
 	float OrientX = 1.f;
 
 	void RotateMeshUsingOrientX() const;
-	
+
 #pragma endregion
 
 #pragma region State Machine
+
 public:
 	void CreateStateMachine();
 
@@ -60,6 +69,7 @@ protected:
 #pragma endregion
 
 #pragma region Input Data / Mapping Context
+
 public:
 	UPROPERTY()
 	TObjectPtr<UInputMappingContext> InputMappingContext;
@@ -72,23 +82,23 @@ protected:
 #pragma endregion
 
 #pragma region Input Move X
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FInputMoveXEvent, float, InputMoveX);
-	
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FInputMoveXFastEvent, float, InputMoveX);
+
 public:
 	float GetInputMoveX() const;
 
 	UPROPERTY()
-	FInputMoveXEvent InputMoveXFastEvent;
-	
+	FInputMoveXFastEvent InputMoveXFastEvent;
+
 protected:
 	UPROPERTY()
-	float InputMoveX = 0.f;
+	float InputMoveXValue = 0.f;
 
 private:
 	void BindInputMoveXAxisAndActions(UEnhancedInputComponent* EnhancedInputComponent);
-	
+
 	void OnInputMoveX(const FInputActionValue& InputActionValue);
-	
+
 	void OnInputMoveXFast(const FInputActionValue& InputActionValue);
 #pragma endregion
 
@@ -98,32 +108,39 @@ private:
 public:
 	UPROPERTY()
 	FInputJumpEvent InputJumpEvent;
-	
+
 private:
 	void OnInputJump(const FInputActionValue& InputActionValue);
 	void BindInputJumpAndActions(UEnhancedInputComponent* EnhancedInputComponent);
 
-	
+
 #pragma endregion
 
 #pragma region Input Crouch
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FInputCrouchEvent, float, InputCrouchValue);
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FInputMoveYEvent, float, InputMoveYValue);
+
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FInputMoveYFastEvent, float, InputMoveYValue);
 
 public:
 	UPROPERTY()
-	FInputCrouchEvent InputCrouchEvent;
+	FInputMoveYEvent InputMoveYEvent;
 
-	float GetInputCrouchValue() const;
+	UPROPERTY()
+	FInputMoveYEvent InputMoveYFastEvent;
+
+	float GetInputMoveYValue() const;
 
 protected:
-	float CrouchValue = 0.f;
-	
-private:
-	void OnInputCrouch(const FInputActionValue& InputActionValue);
-	void BindInputCrouchAndActions(UEnhancedInputComponent* EnhancedInputComponent);
+	float InputMoveYValue = 0.f;
 
-	
+private:
+	void BindInputMoveYAxisAndActions(UEnhancedInputComponent* EnhancedInputComponent);
+
+	void OnInputMoveY(const FInputActionValue& InputActionValue);
+
+	void OnInputMoveYFast(const FInputActionValue& InputActionValue);
+
+	void CheckForOneWayPlatform();
+
 #pragma endregion
 };
-
-

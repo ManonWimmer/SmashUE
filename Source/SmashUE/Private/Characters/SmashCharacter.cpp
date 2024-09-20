@@ -7,6 +7,8 @@
 #include "Characters/SmashCharacterStateMachine.h"
 #include "EnhancedInputComponent.h"
 #include "Characters/SmashCharacterStateID.h"
+#include "Components/CapsuleComponent.h"
+#include "Components/DynamicMeshComponent.h"
 
 
 // Sets default values	
@@ -14,6 +16,12 @@ ASmashCharacter::ASmashCharacter()
 {
 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+
+	if (GetCapsuleComponent())
+	{
+		GetCapsuleComponent()->OnComponentBeginOverlap.AddDynamic(this, &ASmashCharacter::OnCollisionEnter);
+		GetCapsuleComponent()->OnComponentEndOverlap.AddDynamic(this, &ASmashCharacter::OnCollisionExit);
+	}
 }
 
 // Called when the game starts or when spawned
@@ -45,7 +53,7 @@ void ASmashCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 
 	BindInputMoveXAxisAndActions(EnhancedInputComponent);
 	BindInputJumpAndActions(EnhancedInputComponent);
-	BindInputCrouchAndActions(EnhancedInputComponent);
+	BindInputMoveYAxisAndActions(EnhancedInputComponent);
 }
 
 float ASmashCharacter::GetOrientX() const
@@ -97,9 +105,11 @@ void ASmashCharacter::SetupMappingContextIntoController() const
 	InputSystem->AddMappingContext(InputMappingContext, 0);
 }
 
+#pragma region Input Move X
+
 float ASmashCharacter::GetInputMoveX() const
 {
-	return InputMoveX;
+	return InputMoveXValue;
 }
 
 void ASmashCharacter::BindInputMoveXAxisAndActions(UEnhancedInputComponent* EnhancedInputComponent)
@@ -139,14 +149,18 @@ void ASmashCharacter::BindInputMoveXAxisAndActions(UEnhancedInputComponent* Enha
 
 void ASmashCharacter::OnInputMoveX(const FInputActionValue& InputActionValue)
 {
-	InputMoveX = InputActionValue.Get<float>();
+	InputMoveXValue = InputActionValue.Get<float>();
 }
 
 void ASmashCharacter::OnInputMoveXFast(const FInputActionValue& InputActionValue)
 {
-	InputMoveX = InputActionValue.Get<float>();
-	InputMoveXFastEvent.Broadcast(InputMoveX);
+	InputMoveXValue = InputActionValue.Get<float>();
+	InputMoveXFastEvent.Broadcast(InputMoveXValue);
 }
+
+#pragma endregion
+
+#pragma region Input Jump
 
 void ASmashCharacter::OnInputJump(const FInputActionValue& InputActionValue)
 {
@@ -167,40 +181,114 @@ void ASmashCharacter::BindInputJumpAndActions(UEnhancedInputComponent* EnhancedI
 	}
 }
 
-float ASmashCharacter::GetInputCrouchValue() const
+#pragma endregion
+
+#pragma region Input Move Y
+
+float ASmashCharacter::GetInputMoveYValue() const
 {
-	return CrouchValue;
+	return InputMoveYValue;
 }
 
-void ASmashCharacter::OnInputCrouch(const FInputActionValue& InputActionValue)
-{
-	CrouchValue = InputActionValue.Get<float>();
-	InputCrouchEvent.Broadcast(CrouchValue);
-}
-
-void ASmashCharacter::BindInputCrouchAndActions(UEnhancedInputComponent* EnhancedInputComponent)
+void ASmashCharacter::BindInputMoveYAxisAndActions(UEnhancedInputComponent* EnhancedInputComponent)
 {
 	if (InputData == nullptr) return;
 
-	if (InputData->InputActionCrouch)
+	if (InputData->InputActionMoveY)
 	{
 		EnhancedInputComponent->BindAction(
-			InputData->InputActionCrouch,
+			InputData->InputActionMoveY,
 			ETriggerEvent::Started,
 			this,
-			&ASmashCharacter::OnInputCrouch);
-		
-		EnhancedInputComponent->BindAction(
-			InputData->InputActionCrouch,
-			ETriggerEvent::Triggered,
-			this,
-			&ASmashCharacter::OnInputCrouch);
+			&ASmashCharacter::OnInputMoveY);
 
 		EnhancedInputComponent->BindAction(
-			InputData->InputActionCrouch,
+			InputData->InputActionMoveY,
+			ETriggerEvent::Triggered,
+			this,
+			&ASmashCharacter::OnInputMoveY);
+
+		EnhancedInputComponent->BindAction(
+			InputData->InputActionMoveY,
 			ETriggerEvent::Completed,
 			this,
-			&ASmashCharacter::OnInputCrouch);
+			&ASmashCharacter::OnInputMoveY);
+	}
+
+	if (InputData->InputActionMoveYFast)
+	{
+		EnhancedInputComponent->BindAction(
+			InputData->InputActionMoveYFast,
+			ETriggerEvent::Triggered,
+			this,
+			&ASmashCharacter::OnInputMoveYFast);
 	}
 }
 
+void ASmashCharacter::OnInputMoveY(const FInputActionValue& InputActionValue)
+{
+	InputMoveYValue = InputActionValue.Get<float>();
+	InputMoveYEvent.Broadcast(InputMoveYValue);
+}
+
+void ASmashCharacter::OnInputMoveYFast(const FInputActionValue& InputActionValue)
+{
+	InputMoveYValue = InputActionValue.Get<float>();
+	InputMoveYFastEvent.Broadcast(InputMoveYValue);
+	CheckForOneWayPlatform();
+}
+
+void ASmashCharacter::CheckForOneWayPlatform()
+{
+	FVector Start = GetActorLocation();
+	FVector End = Start - FVector(0, 0, 100.f);
+	FHitResult HitResult;
+
+	GetWorld()->LineTraceSingleByChannel(
+		HitResult,
+		Start,
+		End,
+		ECC_Visibility
+	);
+
+	if (HitResult.bBlockingHit && HitResult.GetActor()->Tags.Contains("OneWayPlatform"))
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Yellow, TEXT("One way platform"));
+
+		GetCapsuleComponent()->IgnoreComponentWhenMoving(
+			HitResult.GetActor()->FindComponentByClass<UDynamicMeshComponent>(), true);
+
+		if (HitResult.GetActor()->FindComponentByClass<UDynamicMeshComponent>() == nullptr)
+			GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Yellow, TEXT("pas trouvé static mesh"));
+		else
+			GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Yellow, TEXT("trouvé static mesh"));
+	}
+}
+
+
+#pragma endregion
+
+void ASmashCharacter::OnCollisionEnter(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+                                       UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep,
+                                       const FHitResult& SweepResult)
+{
+	if (OtherActor == nullptr) return;
+
+	if (OtherActor->Tags.Contains("OneWayPlatform"))
+	{
+		GetCapsuleComponent()->IgnoreComponentWhenMoving(
+			OtherActor->FindComponentByClass<UDynamicMeshComponent>(), true);
+	}
+}
+
+void ASmashCharacter::OnCollisionExit(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+	if (OtherActor == nullptr) return;
+
+	if (OtherActor->Tags.Contains("OneWayPlatform"))
+	{
+		GetCapsuleComponent()->IgnoreComponentWhenMoving(
+			OtherActor->FindComponentByClass<UDynamicMeshComponent>(), false);
+	}
+}
