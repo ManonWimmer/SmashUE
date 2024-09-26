@@ -23,7 +23,17 @@ public:
 	
 	UFUNCTION()
 	void OnInputJump();
-	
+	void CalculateJumpVelocity();
+
 	UPROPERTY(EditAnywhere)
 	UAnimMontage* JumpAnim;
+
+	UPROPERTY(EditAnywhere)
+	float JumpMaxHeight = 200.f;
+
+	UPROPERTY(EditAnywhere)
+	float JumpDuration = 3.f;
+
+private:
+	FVector JumpLocation;
 };

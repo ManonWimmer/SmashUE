@@ -23,7 +23,6 @@ void USmashCharacterStateJump::StateEnter(ESmashCharacterStateID PreviousStateID
 		FColor::Cyan,
 		TEXT("Enter StateJump")
 		);
-
 	Character->PlayAnimMontage(JumpAnim);
 	OnInputJump();
 }
@@ -54,10 +53,49 @@ void USmashCharacterStateJump::StateTick(float DeltaTime)
 
 	Character->SetOrientX(Character->GetInputMoveX());
 	Character->AddMovementInput(FVector::ForwardVector, Character->GetOrientX());
+
+	CalculateJumpVelocity();
+	
 }
 
 void USmashCharacterStateJump::OnInputJump()
 {
-	Character->Jump();
+	float JumpVelocity = (2.0f * JumpMaxHeight) / JumpDuration;
+
+	// Appliquer cette vélocité au personnage
+	FVector JumpImpulse = FVector(0.0f, 0.0f, JumpVelocity);
+	Character->LaunchCharacter(JumpImpulse, false, true);
+
+	// Mémoriser la position de départ du saut
+	JumpLocation = Character->GetActorLocation();
+}
+
+
+void USmashCharacterStateJump::CalculateJumpVelocity()
+{
+	FVector Velocity = Character->GetVelocity();
+	float ZVelocity = Velocity.Z;
+	
+	// Calcul de la durée du saut et de la vélocité verticale en fonction de JumpMaxHeight
+
+	float DesiredVelocityZ = (2.0f * JumpMaxHeight) / JumpDuration;
+
+	// Appliquer la vélocité ajustée pour conserver la même durée de saut
+	if (ZVelocity > 0 && Character->GetActorLocation().Z - JumpLocation.Z < JumpMaxHeight)
+	{
+		FVector NewVelocity = Velocity;
+		NewVelocity.Z = FMath::Min(DesiredVelocityZ, ZVelocity); // Limiter la vitesse verticale
+		Character->GetCharacterMovement()->Velocity = NewVelocity;
+	}
+
+	// Si on dépasse la hauteur maximale
+	if (Character->GetActorLocation().Z - JumpLocation.Z > JumpMaxHeight)
+	{
+		// Stopper la montée et passer à l'état de chute
+		FVector NewVelocity = Velocity;
+		NewVelocity.Z = 0.0f;
+		Character->GetCharacterMovement()->Velocity = NewVelocity;
+		StateMachine->ChangeState(ESmashCharacterStateID::Fall);
+	}
 }
 
