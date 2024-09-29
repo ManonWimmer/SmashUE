@@ -1,22 +1,19 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Characters/States/SmashCharacterStateJump.h"
+#include "Characters/States/SmashCharacterStateDoubleJump.h"
 #include "Characters/SmashCharacter.h"
 #include "Characters/SmashCharacterSettings.h"
 #include "Characters/SmashCharacterStateID.h"
 #include "Characters/SmashCharacterStateMachine.h"
-#include "Characters/States/SmashCharacterStateDoubleJump.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
-ESmashCharacterStateID USmashCharacterStateJump::GetStateID()
+ESmashCharacterStateID USmashCharacterStateDoubleJump::GetStateID()
 {
-	return ESmashCharacterStateID::Jump;
+	return ESmashCharacterStateID::DoubleJump;
 }
 
-
-
-void USmashCharacterStateJump::StateEnter(ESmashCharacterStateID PreviousStateID)
+void USmashCharacterStateDoubleJump::StateEnter(ESmashCharacterStateID PreviousStateID)
 {
 	Super::StateEnter(PreviousStateID);
 
@@ -24,15 +21,13 @@ void USmashCharacterStateJump::StateEnter(ESmashCharacterStateID PreviousStateID
 		-1,
 		3.f,
 		FColor::Cyan,
-		TEXT("Enter StateJump")
+		TEXT("Enter StateDoubleJump")
 		);
 	Character->PlayAnimMontage(JumpAnim);
 	OnInputJump();
-
-	Character->InputJumpEvent.AddDynamic(this, &USmashCharacterStateJump::OnInputDoubleJump);
 }
 
-void USmashCharacterStateJump::StateExit(ESmashCharacterStateID NextStateID)
+void USmashCharacterStateDoubleJump::StateExit(ESmashCharacterStateID NextStateID)
 {
 	Super::StateExit(NextStateID);
 
@@ -40,13 +35,11 @@ void USmashCharacterStateJump::StateExit(ESmashCharacterStateID NextStateID)
 		-1,
 		3.f,
 		FColor::Red,
-		TEXT("Exit StateJump")
+		TEXT("Exit StateDoubleJump")
 		);
-
-	Character->InputJumpEvent.RemoveDynamic(this, &USmashCharacterStateJump::OnInputDoubleJump);
 }
 
-void USmashCharacterStateJump::StateTick(float DeltaTime)
+void USmashCharacterStateDoubleJump::StateTick(float DeltaTime)
 {
 	Super::StateTick(DeltaTime);
 
@@ -62,10 +55,9 @@ void USmashCharacterStateJump::StateTick(float DeltaTime)
 	Character->AddMovementInput(FVector::ForwardVector, Character->GetOrientX());
 
 	CalculateJumpVelocity();
-	
 }
 
-void USmashCharacterStateJump::OnInputJump()
+void USmashCharacterStateDoubleJump::OnInputJump()
 {
     float JumpVelocity = (2.0f * JumpMaxHeight) / (JumpDuration / 2.0f);
 	
@@ -78,7 +70,7 @@ void USmashCharacterStateJump::OnInputJump()
     Character->GetCharacterMovement()->GravityScale = FMath::Abs(Gravity / GetWorld()->GetGravityZ());
 }
 
-void USmashCharacterStateJump::CalculateJumpVelocity()
+void USmashCharacterStateDoubleJump::CalculateJumpVelocity()
 {
     FVector Velocity = Character->GetVelocity();
     float ZVelocity = Velocity.Z;
@@ -90,11 +82,6 @@ void USmashCharacterStateJump::CalculateJumpVelocity()
         Character->GetCharacterMovement()->Velocity = NewVelocity;
         StateMachine->ChangeState(ESmashCharacterStateID::Fall);
     }
-}
-
-void USmashCharacterStateJump::OnInputDoubleJump(float InputJumpValue)
-{
-	StateMachine->ChangeState(ESmashCharacterStateID::DoubleJump);
 }
 
 

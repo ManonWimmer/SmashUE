@@ -1,22 +1,20 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
 #include "CoreMinimal.h"
 #include "Characters/SmashCharacterState.h"
-#include "SmashCharacterStateJump.generated.h"
+#include "SmashCharacterStateDoubleJump.generated.h"
 
 
 UCLASS(ClassGroup=(SmashCharacterState), meta=(BlueprintSpawnableComponent))
-class SMASHUE_API USmashCharacterStateJump : public USmashCharacterState
+class SMASHUE_API USmashCharacterStateDoubleJump : public USmashCharacterState
 {
 	GENERATED_BODY()
 
 public:
 	virtual ESmashCharacterStateID GetStateID() override;
 
-	UFUNCTION()
-	void OnInputDoubleJump(float InputJumpValue);
 	virtual void StateEnter(ESmashCharacterStateID PreviousStateID) override;
 
 	virtual void StateExit(ESmashCharacterStateID NextStateID) override;
