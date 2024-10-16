@@ -7,12 +7,16 @@ public class SmashUE : ModuleRules
 	public SmashUE(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
-	
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "UMG", "DeveloperSettings" });
-		
+
+		PublicDependencyModuleNames.AddRange(new string[]
+			{ "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "UMG", "DeveloperSettings" });
+
 		// Uncomment if you are using Slate UI
-		PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore", "GeometryFramework", "GeometryFramework", "GeometryFramework" });
-		
+		PrivateDependencyModuleNames.AddRange(new string[]
+		{
+			"Slate", "SlateCore", "GeometryFramework", "GeometryFramework", "GeometryFramework", "LocalMultiplayer"
+		});
+
 		// Uncomment if you are using online features
 		// PrivateDependencyModuleNames.Add("OnlineSubsystem");
 

@@ -21,55 +21,60 @@ bool ULocalMultiplayerGameViewportClient::InputKey(const FInputKeyEventArgs& Eve
 {
 	ULocalMultiplayerSubsystem* Subsystem = GetGameInstance()->GetSubsystem<ULocalMultiplayerSubsystem>();
 	const ULocalMultiplayerSettings* Settings = GetDefault<ULocalMultiplayerSettings>();
+	if(GEngine) GEngine->AddOnScreenDebugMessage(-1, 5, FColor::Red, "InputKey");
 
 	if (!EventArgs.IsGamepad())
 	{
 		int KeyboardIndex =
 			Settings->FindKeyboardProfileIndexFromKey(EventArgs.Key, ELocalMultiplayerInputMappingType::InGame);
-		if (KeyboardIndex >= 0)
+		if(GEngine) GEngine->AddOnScreenDebugMessage(-1, 5, FColor::Red, FString::Printf(TEXT("KeyboardIndex:%d"), KeyboardIndex));
+		
+		if (KeyboardIndex != -1)
 		{
 			int PlayerIndex = Subsystem->GetAssignedPlayerIndexFromKeyboardProfileIndex(KeyboardIndex);
-		
-			if (PlayerIndex < 0)
+			if(GEngine) GEngine->AddOnScreenDebugMessage(-1, 5, FColor::Red, FString::Printf(TEXT("PlayerIndex:%d"), PlayerIndex));
+			
+			if (PlayerIndex == -1)
 			{
 				PlayerIndex = Subsystem->AssignNewPlayerToKeyboardProfile(KeyboardIndex);
 
 				Subsystem->AssignKeyboardMapping(PlayerIndex, KeyboardIndex,
 											 ELocalMultiplayerInputMappingType::InGame);
-
-				APlayerController* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), PlayerIndex);
-				const FInputKeyParams KeyParams(EventArgs.Key, EventArgs.Event, 0);
-				PlayerController->InputKey(KeyParams);
 			}
-			else return Super::InputKey(EventArgs);
+
+			if(GEngine) GEngine->AddOnScreenDebugMessage(-1, 5, FColor::Magenta, "Move");
+			APlayerController* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), PlayerIndex);
+			const FInputKeyParams KeyParams(EventArgs.Key, EventArgs.Event, static_cast<double>(EventArgs.AmountDepressed), EventArgs.IsGamepad());
+			if(GEngine) GEngine->AddOnScreenDebugMessage(-1, 5, FColor::Yellow, "InputKey");
+			PlayerController->InputKey(KeyParams);
 		}
-		else return Super::InputKey(EventArgs);
 	}
 	else
 	{
 		int PlayerIndex = Subsystem->GetAssignedPlayerIndexFromGamepadDeviceID(EventArgs.InputDevice.GetId());
-
+		if(GEngine) GEngine->AddOnScreenDebugMessage(-1, 5, FColor::Red, FString::Printf(TEXT("PlayerIndex:%d"), PlayerIndex));
+		
 		if (PlayerIndex == -1)
 		{
 			PlayerIndex = Subsystem->AssignNewPlayerToGamepadDeviceID(EventArgs.InputDevice.GetId());
 
 			Subsystem->AssignGamepadInputMapping(PlayerIndex, ELocalMultiplayerInputMappingType::InGame);
-
-			APlayerController* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), PlayerIndex);
-			const FInputKeyParams KeyParams(EventArgs.Key, EventArgs.Event, 0);
-			PlayerController->InputKey(KeyParams);
 		}
-		else return Super::InputKey(EventArgs);
+
+		if(GEngine) GEngine->AddOnScreenDebugMessage(-1, 5, FColor::Red, "Move");
+		APlayerController* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), PlayerIndex);
+		const FInputKeyParams KeyParams(EventArgs.Key, EventArgs.Event, static_cast<double>(EventArgs.AmountDepressed), EventArgs.IsGamepad());
+		PlayerController->InputKey(KeyParams);
 	}
 
-	return true;
+	return Super::InputKey(EventArgs);
 }
 
 // Détection des inputs + attributions des player index en fonction des axes (joysticks à la manette) fourni en paramètre.
 bool ULocalMultiplayerGameViewportClient::InputAxis(FViewport* InViewport, FInputDeviceId InputDevice, FKey Key,
                                                     float Delta, float DeltaTime, int32 NumSamples, bool bGamepad)
 {
-	
+	if(GEngine) GEngine->AddOnScreenDebugMessage(-1, 5, FColor::Red, "InputAxis");
 
 	ULocalMultiplayerSubsystem* Subsystem = GetGameInstance()->GetSubsystem<ULocalMultiplayerSubsystem>();
 	const ULocalMultiplayerSettings* Settings = GetDefault<ULocalMultiplayerSettings>();
@@ -78,41 +83,46 @@ bool ULocalMultiplayerGameViewportClient::InputAxis(FViewport* InViewport, FInpu
 	{
 		int KeyboardIndex =
 			Settings->FindKeyboardProfileIndexFromKey(Key, ELocalMultiplayerInputMappingType::InGame);
-		if (KeyboardIndex >= 0)
+		if(GEngine) GEngine->AddOnScreenDebugMessage(-1, 5, FColor::Red, FString::Printf(TEXT("KeyboardIndex:%d"), KeyboardIndex));
+		
+		if (KeyboardIndex != -1)
 		{
 			int PlayerIndex = Subsystem->GetAssignedPlayerIndexFromKeyboardProfileIndex(KeyboardIndex);
-		
-			if (PlayerIndex < 0)
+			if(GEngine) GEngine->AddOnScreenDebugMessage(-1, 5, FColor::Red, FString::Printf(TEXT("PlayerIndex:%d"), PlayerIndex));
+			
+			if (PlayerIndex == -1)
 			{
 				PlayerIndex = Subsystem->AssignNewPlayerToKeyboardProfile(KeyboardIndex);
 
 				Subsystem->AssignKeyboardMapping(PlayerIndex, KeyboardIndex,
 											 ELocalMultiplayerInputMappingType::InGame);
-
-				APlayerController* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), PlayerIndex);
-				FInputKeyParams KeyParams(Key, Delta, DeltaTime, NumSamples, bGamepad, InputDevice);
-				PlayerController->InputKey(KeyParams);
 			}
-			else return Super::InputAxis(InViewport, InputDevice, Key, Delta, DeltaTime, NumSamples, bGamepad);
+
+			if(GEngine) GEngine->AddOnScreenDebugMessage(-1, 5, FColor::Red, "Move");
+			APlayerController* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), PlayerIndex);
+			FInputKeyParams KeyParams(Key, Delta, DeltaTime, NumSamples, bGamepad, InputDevice);
+			PlayerController->InputKey(KeyParams);
 		}
-		else return Super::InputAxis(InViewport, InputDevice, Key, Delta, DeltaTime, NumSamples, bGamepad);
+		
 	}
 	else
 	{
 		int PlayerIndex = Subsystem->GetAssignedPlayerIndexFromGamepadDeviceID(InputDevice.GetId());
-
+		if(GEngine) GEngine->AddOnScreenDebugMessage(-1, 5, FColor::Red, FString::Printf(TEXT("PlayerIndex:%d"), PlayerIndex));
+		
 		if (PlayerIndex == -1)
 		{
 			PlayerIndex = Subsystem->AssignNewPlayerToGamepadDeviceID(InputDevice.GetId());
 
 			Subsystem->AssignGamepadInputMapping(PlayerIndex, ELocalMultiplayerInputMappingType::InGame);
-
-			APlayerController* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), PlayerIndex);
-			FInputKeyParams KeyParams(Key, Delta, DeltaTime, NumSamples, bGamepad, InputDevice);
-			PlayerController->InputKey(KeyParams);
 		}
-		else return Super::InputAxis(InViewport, InputDevice, Key, Delta, DeltaTime, NumSamples, bGamepad);
+		
+		if(GEngine) GEngine->AddOnScreenDebugMessage(-1, 5, FColor::Red, "Move");
+		APlayerController* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), PlayerIndex);
+		FInputKeyParams KeyParams(Key, Delta, DeltaTime, NumSamples, bGamepad, InputDevice);
+		PlayerController->InputKey(KeyParams);
+		
 	}
 
-	return true;
+	return Super::InputAxis(InViewport, InputDevice, Key, Delta, DeltaTime, NumSamples, bGamepad);
 }
